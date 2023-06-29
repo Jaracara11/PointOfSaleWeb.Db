@@ -1,10 +1,6 @@
 {
   "ExpandedNodes": [
-    "",
-    "\\StoredProcedures",
-    "\\StoredProcedures\\Orders",
-    "\\Tables"
+    "\\StoredProcedures"
   ],
-  "SelectedNode": "\\StoredProcedures\\Orders",
   "PreviewInSolutionExplorer": false
 }

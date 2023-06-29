@@ -8,7 +8,6 @@ GO
    CREATE PROCEDURE [dbo].[GetRecentOrders] AS BEGIN
 SELECT TOP 5 
        [User], 
-	   Products, 
 	   OrderTotal, 
 	   OrderDate 
 FROM Orders WITH (NOLOCK) 

@@ -1,6 +1,6 @@
 USE [POS]
 GO
-/****** Object:  StoredProcedure [dbo].[NewOrderTransaction]    Script Date: 6/28/2023 1:55:51 PM ******/
+/****** Object:  StoredProcedure [dbo].[NewOrderTransaction]    Script Date: 6/30/2023 10:12:58 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -22,7 +22,7 @@ BEGIN
 
 	DECLARE @UserRoleID INT;
 
-	SELECT @UserRoleID = (SELECT UserRoleID FROM Users WHERE Username = @User);
+	SELECT @UserRoleID = (SELECT UserRoleID FROM Users WITH (NOLOCK) WHERE Username = @User);
 
 	IF (@UserRoleID = 0 OR @UserRoleID IS NULL)
 	BEGIN

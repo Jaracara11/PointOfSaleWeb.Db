@@ -6,12 +6,12 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE PROCEDURE [dbo].[GetTotalSalesOfTheDay] AS 
+ALTER PROCEDURE [dbo].[GetTotalSalesOfTheDay] AS 
 BEGIN
     DECLARE @TotalSalesOfTheDay DECIMAL(18, 2) = NULL;
 
     SELECT @TotalSalesOfTheDay = SUM(OrderTotal)
-    FROM orders 
+    FROM orders WITH (NOLOCK)
     WHERE CONVERT(DATE, OrderDate) = CONVERT(DATE, GETDATE());
 
     IF @TotalSalesOfTheDay IS NOT NULL

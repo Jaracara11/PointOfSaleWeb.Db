@@ -4,6 +4,5 @@
     "\\StoredProcedures",
     "\\StoredProcedures\\Orders"
   ],
-  "SelectedNode": "\\StoredProcedures\\Orders\\dbo.GetTotalSalesOfTheDay.StoredProcedure.sql",
   "PreviewInSolutionExplorer": false
 }

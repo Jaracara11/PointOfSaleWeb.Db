@@ -1,6 +1,9 @@
 {
   "ExpandedNodes": [
-    "\\StoredProcedures"
+    "",
+    "\\StoredProcedures",
+    "\\StoredProcedures\\Orders"
   ],
+  "SelectedNode": "\\StoredProcedures\\Orders\\dbo.NewOrderTransaction.StoredProcedure.sql",
   "PreviewInSolutionExplorer": false
 }

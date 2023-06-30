@@ -5,7 +5,7 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-ALTER PROCEDURE [dbo].[GetBestSellerProduct]
+CREATE PROCEDURE [dbo].[GetBestSellerProduct]
 AS
 BEGIN
     DECLARE @ProductID INT;
@@ -30,4 +30,16 @@ BEGIN
     WHERE ProductID = @ProductID;
 
     SELECT @ProductName AS ProductName, @ProductDescription AS ProductDescription, @TotalQuantitySold AS TotalQuantitySold;
+
+	 SELECT @ProductName AS ProductName,
+           @ProductDescription AS ProductDescription,
+           ISNULL(@TotalQuantitySold, 0) AS TotalQuantitySold;
 END
+
+
+
+
+
+
+
+

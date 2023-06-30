@@ -4,5 +4,6 @@
     "\\StoredProcedures",
     "\\StoredProcedures\\Orders"
   ],
+  "SelectedNode": "\\StoredProcedures\\Orders\\dbo.GetBestSellerProduct.StoredProcedure.sql",
   "PreviewInSolutionExplorer": false
 }

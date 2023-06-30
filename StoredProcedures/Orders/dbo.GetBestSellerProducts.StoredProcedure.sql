@@ -23,10 +23,10 @@ BEGIN
     ORDER BY SUM(CAST(JSON_VALUE(p.value, '$.ProductQuantity') AS INT)) DESC;
 
     INSERT INTO @TotalQuantitySolds (ProductID, TotalQuantitySold)
-    SELECT p.ProductID, SUM(CAST(JSON_VALUE(oj.value, '$.ProductQuantity') AS INT)) AS TotalQuantitySold
+    SELECT p.ProductID, SUM(CAST(JSON_VALUE(obj.value, '$.ProductQuantity') AS INT)) AS TotalQuantitySold
     FROM Orders o
-    CROSS APPLY OPENJSON(o.Products) oj
-    INNER JOIN @ProductIDs p ON JSON_VALUE(oj.value, '$.ProductID') = p.ProductID
+    CROSS APPLY OPENJSON(o.Products) obj
+    INNER JOIN @ProductIDs p ON JSON_VALUE(obj.value, '$.ProductID') = p.ProductID
     GROUP BY p.ProductID;
 
     INSERT INTO @ProductNames (ProductID, ProductName)

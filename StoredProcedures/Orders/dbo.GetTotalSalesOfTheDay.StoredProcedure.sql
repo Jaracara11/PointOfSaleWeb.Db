@@ -6,7 +6,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-ALTER PROCEDURE [dbo].[GetTotalSalesOfTheDay] AS 
+CREATE PROCEDURE [dbo].[GetTotalSalesOfTheDay] AS 
 BEGIN
     DECLARE @TotalSalesOfTheDay DECIMAL(18, 2) = NULL;
 
@@ -14,8 +14,5 @@ BEGIN
     FROM orders WITH (NOLOCK)
     WHERE CONVERT(DATE, OrderDate) = CONVERT(DATE, GETDATE());
 
-    IF @TotalSalesOfTheDay IS NOT NULL
-        SELECT @TotalSalesOfTheDay;
-    ELSE
-        SELECT 0 AS TotalSalesOfTheDay;
+    SELECT ISNULL(@TotalSalesOfTheDay, 0) AS TotalSalesOfTheDay;
 END

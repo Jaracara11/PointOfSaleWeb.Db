@@ -6,7 +6,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE PROCEDURE [dbo].[GetBestSellerProducts]
+ALTER PROCEDURE [dbo].[GetBestSellerProducts]
 AS
 BEGIN
     DECLARE @ProductIDs TABLE (ProductID INT);
@@ -15,7 +15,7 @@ BEGIN
     DECLARE @ProductDescriptions TABLE (ProductID INT, ProductDescription NVARCHAR(100));
 
     INSERT INTO @ProductIDs (ProductID)
-    SELECT TOP 3 WITH TIES
+    SELECT TOP 5 WITH TIES
         JSON_VALUE(p.value, '$.ProductID') AS ProductID
     FROM Orders o
     CROSS APPLY OPENJSON(o.Products) p

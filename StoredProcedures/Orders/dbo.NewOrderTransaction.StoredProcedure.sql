@@ -67,7 +67,7 @@ BEGIN
     BEGIN TRY
         BEGIN TRANSACTION;
 
-        DECLARE @OrderID NVARCHAR(50) = NEWID();
+        DECLARE @OrderID UNIQUEIDENTIFIER = NEWID();
         DECLARE @OrderSubTotal DECIMAL(18, 2) = 0;
         DECLARE @OrderTotal DECIMAL(18, 2) = 0;
         DECLARE @OrderDate DATETIME = GETDATE();

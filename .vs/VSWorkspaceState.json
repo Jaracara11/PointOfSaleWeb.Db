@@ -4,6 +4,6 @@
     "\\StoredProcedures",
     "\\StoredProcedures\\Orders"
   ],
-  "SelectedNode": "\\StoredProcedures\\Orders\\dbo.GetDiscountsByUsername.StoredProcedure.sql",
+  "SelectedNode": "\\StoredProcedures\\Orders\\dbo.GetRecentOrders.StoredProcedure.sql",
   "PreviewInSolutionExplorer": false
 }

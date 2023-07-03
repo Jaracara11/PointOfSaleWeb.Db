@@ -1,6 +1,6 @@
 USE [POS]
 GO
-/****** Object:  StoredProcedure [dbo].[NewOrderTransaction]    Script Date: 6/30/2023 10:12:58 AM ******/
+/****** Object:  StoredProcedure [dbo].[NewOrderTransaction]    Script Date: 7/3/2023 4:54:11 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -95,14 +95,7 @@ BEGIN
 
         COMMIT TRANSACTION;
 
-        SELECT
-            @OrderID AS OrderID,
-            @User AS [User],
-            @Products AS Products,
-            @OrderSubTotal AS OrderSubTotal,
-            @Discount AS Discount,
-            @OrderTotal AS OrderTotal,
-            @OrderDate AS OrderDate;
+        EXEC [dbo].[GetOrderById] @OrderId = @OrderID;
 
     END TRY
     BEGIN CATCH

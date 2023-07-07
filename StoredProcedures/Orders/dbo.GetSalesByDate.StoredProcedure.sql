@@ -6,12 +6,15 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE PROCEDURE [dbo].[GetSalesByDate]
+ALTER PROCEDURE [dbo].[GetSalesByDate]
 @InitialDate DateTime,
 @FinalDate Datetime
 AS BEGIN
- SELECT
-        SUM(OrderTotal) AS TotalSales
-    FROM Orders WITH (NOLOCK)
-    WHERE OrderDate BETWEEN @InitialDate AND @FinalDate;
+	DECLARE @TotalSales decimal(18, 2);
+
+	SELECT @TotalSales = SUM(OrderTotal)
+	FROM Orders WITH (NOLOCK)
+	WHERE OrderDate BETWEEN @InitialDate AND @FinalDate;
+
+	SELECT ISNULL(@TotalSales, 0);
 END

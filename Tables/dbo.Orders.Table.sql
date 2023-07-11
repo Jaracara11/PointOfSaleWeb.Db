@@ -16,7 +16,7 @@ CREATE TABLE [dbo].[Orders](
 	[Discount] [decimal](18, 2) NULL,
 	[OrderTotal] [decimal](18, 2) NOT NULL,
 	[OrderDate] [datetime] NOT NULL,
-	[OrderIsCancelled] [bit] NULL,
+	[OrderCancelled] [bit] NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[OrderID] ASC

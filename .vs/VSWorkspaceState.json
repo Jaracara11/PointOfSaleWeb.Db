@@ -4,6 +4,6 @@
     "\\StoredProcedures",
     "\\StoredProcedures\\Orders"
   ],
-  "SelectedNode": "\\StoredProcedures\\Orders\\dbo.GetOrdersByDate.StoredProcedure.sql",
+  "SelectedNode": "\\dbo.CreateDbScript.sql",
   "PreviewInSolutionExplorer": false
 }

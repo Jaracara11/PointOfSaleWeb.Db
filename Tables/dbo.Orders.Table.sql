@@ -1,6 +1,7 @@
 USE [POS]
 GO
-/****** Object:  Table [dbo].[Orders]    Script Date: 6/24/2023 1:17:46 PM ******/
+
+/****** Object:  Table [dbo].[Orders]    Script Date: 7/11/2023 3:53:47 PM ******/
 SET ANSI_NULLS ON
 GO
 
@@ -15,6 +16,7 @@ CREATE TABLE [dbo].[Orders](
 	[Discount] [decimal](18, 2) NULL,
 	[OrderTotal] [decimal](18, 2) NOT NULL,
 	[OrderDate] [datetime] NOT NULL,
+	[OrderIsCancelled] [bit] NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[OrderID] ASC
@@ -24,3 +26,5 @@ GO
 
 ALTER TABLE [dbo].[Orders] ADD  DEFAULT (newid()) FOR [OrderID]
 GO
+
+

@@ -1,6 +1,6 @@
 USE [POS]
 GO
-/****** Object:  StoredProcedure [dbo].[CancelOrderTransaction]    Script Date: 7/11/2023 4:45:12 PM ******/
+/****** Object:  StoredProcedure [dbo].[CancelOrderTransaction]    Script Date: 7/12/2023 8:47:55 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -31,13 +31,14 @@ BEGIN
         FROM Orders
         CROSS APPLY OPENJSON(Products) AS p;
 
-        UPDATE Products
-        SET ProductStock = ProductStock + pq.ProductQuantity
+		UPDATE p
+        SET ProductStock = p.ProductStock + pq.ProductQuantity
         FROM @ProductQuantities pq
         INNER JOIN Products p ON pq.ProductID = p.ProductID;
 
         UPDATE Orders
-        SET OrderTotal = 0
+        SET OrderTotal = 0,
+            OrderCancelled = 1
         WHERE OrderID = @OrderID;
 
         COMMIT TRANSACTION;

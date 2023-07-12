@@ -1,6 +1,6 @@
 USE [POS]
 GO
-/****** Object:  StoredProcedure [dbo].[GetOrderById]    Script Date: 7/3/2023 4:41:27 PM ******/
+/****** Object:  StoredProcedure [dbo].[GetOrderById]    Script Date: 7/12/2023 9:08:07 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -22,7 +22,8 @@ BEGIN
                 ProductDescription,
                 ProductQuantity,
                 ProductPrice,
-                C.CategoryName AS ProductCategoryName
+                C.CategoryName AS ProductCategoryName,
+				OrderCancelled
             FROM
                 Orders
                 CROSS APPLY OPENJSON(Orders.Products) WITH (

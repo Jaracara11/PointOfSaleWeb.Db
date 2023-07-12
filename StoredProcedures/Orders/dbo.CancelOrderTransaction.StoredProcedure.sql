@@ -1,6 +1,6 @@
 USE [POS]
 GO
-/****** Object:  StoredProcedure [dbo].[CancelOrderTransaction]    Script Date: 7/12/2023 8:47:55 AM ******/
+/****** Object:  StoredProcedure [dbo].[CancelOrderTransaction]    Script Date: 7/12/2023 9:42:33 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -19,6 +19,11 @@ BEGIN
             THROW 50003, 'Order not found!', 1;
         END
 
+		IF EXISTS (SELECT 1 FROM Orders WHERE OrderID = @OrderID AND OrderCancelled = 1)
+        BEGIN
+            THROW 50004, 'Order already cancelled!', 1;
+        END
+
         DECLARE @ProductQuantities TABLE
         (
             ProductID INT,
@@ -29,9 +34,10 @@ BEGIN
         SELECT JSON_VALUE(p.Value, '$.ProductID') AS ProductID,
                JSON_VALUE(p.Value, '$.ProductQuantity') AS ProductQuantity
         FROM Orders
-        CROSS APPLY OPENJSON(Products) AS p;
+        CROSS APPLY OPENJSON(Orders.Products) AS p
+        WHERE OrderID = @OrderID;
 
-		UPDATE p
+        UPDATE p
         SET ProductStock = p.ProductStock + pq.ProductQuantity
         FROM @ProductQuantities pq
         INNER JOIN Products p ON pq.ProductID = p.ProductID;

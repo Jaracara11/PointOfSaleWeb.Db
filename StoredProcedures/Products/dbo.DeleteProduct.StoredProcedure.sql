@@ -7,7 +7,9 @@ GO
 SET
     QUOTED_IDENTIFIER ON
 GO
-    CREATE PROCEDURE [dbo].[DeleteProduct] @ProductID int AS BEGIN
+    CREATE PROCEDURE [dbo].[DeleteProduct] 
+    @ProductID NVARCHAR(50)
+    AS BEGIN
 SET
     NOCOUNT ON;
 

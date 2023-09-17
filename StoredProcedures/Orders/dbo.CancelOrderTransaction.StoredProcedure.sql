@@ -26,7 +26,7 @@ BEGIN
 
         DECLARE @ProductQuantities TABLE
         (
-            ProductID INT,
+            ProductID [nvarchar](50),
             ProductQuantity INT
         );
 

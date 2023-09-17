@@ -27,7 +27,7 @@ BEGIN
             FROM
                 Orders
                 CROSS APPLY OPENJSON(Orders.Products) WITH (
-                    ProductID int,
+                    ProductID [nvarchar](50),
                     ProductQuantity int
                 ) AS ProductInfo
                 JOIN Products AS P ON ProductInfo.ProductID = P.ProductID

@@ -7,13 +7,16 @@ GO
 SET
     QUOTED_IDENTIFIER ON
 GO
-    CREATE PROCEDURE [dbo].[AddNewProduct] @ProductID INT = 0,
+    CREATE PROCEDURE [dbo].[AddNewProduct] 
+    @ProductID NVARCHAR(50),
     @ProductName NVARCHAR(50),
     @ProductDescription NVARCHAR(100) = NULL,
     @ProductPrice DECIMAL(10, 2),
     @ProductCost DECIMAL(10, 2),
     @ProductStock INT,
-    @ProductCategoryID INT AS BEGIN
+    @ProductCategoryID INT 
+    AS 
+    BEGIN
 SET
     NOCOUNT ON;
 
@@ -23,12 +26,25 @@ IF EXISTS (
     FROM
         [dbo].[products]
     WHERE
-        [productname] = @ProductName
+        [ProductID] = @ProductID
+) BEGIN THROW 50000,
+'Product ID already exists!',
+1;
+END     
+
+IF EXISTS (
+    SELECT
+        1
+    FROM
+        [dbo].[products]
+    WHERE
+        [ProductName] = @ProductName
 ) BEGIN THROW 50000,
 'Product name already exists!',
 1;
+END 
 
-END IF NOT EXISTS (
+IF NOT EXISTS (
     SELECT
         1
     FROM
@@ -43,6 +59,7 @@ END BEGIN TRY BEGIN TRANSACTION;
 
 INSERT INTO
     [dbo].[products] (
+        productid,
         productname,
         productdescription,
         productprice,
@@ -52,6 +69,7 @@ INSERT INTO
     )
 VALUES
     (
+        @ProductID,
         @ProductName,
         @ProductDescription,
         @ProductPrice,
@@ -61,9 +79,6 @@ VALUES
     );
 
 COMMIT TRANSACTION;
-
-SELECT
-    @ProductID = SCOPE_IDENTITY();
 
 EXEC GetProductByID @ProductID = @ProductID;
 

@@ -6,13 +6,13 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-ALTER PROCEDURE [dbo].[GetBestSellerProducts]
+CREATE PROCEDURE [dbo].[GetBestSellerProducts]
 AS
 BEGIN
-    DECLARE @ProductIDs TABLE (ProductID INT);
-    DECLARE @TotalQuantitySolds TABLE (ProductID INT, TotalQuantitySold INT);
-    DECLARE @ProductNames TABLE (ProductID INT, ProductName NVARCHAR(50));
-    DECLARE @ProductDescriptions TABLE (ProductID INT, ProductDescription NVARCHAR(100));
+    DECLARE @ProductIDs TABLE (ProductID NVARCHAR(50));
+    DECLARE @TotalQuantitySolds TABLE (ProductID NVARCHAR(50), TotalQuantitySold INT);
+    DECLARE @ProductNames TABLE (ProductID NVARCHAR(50), ProductName NVARCHAR(50));
+    DECLARE @ProductDescriptions TABLE (ProductID NVARCHAR(50), ProductDescription NVARCHAR(100));
 
     INSERT INTO @ProductIDs (ProductID)
     SELECT TOP 5 WITH TIES

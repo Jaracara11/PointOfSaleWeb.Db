@@ -44,7 +44,7 @@ BEGIN
 
     CREATE TABLE #ProductQuantities
     (
-        ProductID INT,
+        ProductID [nvarchar](50),
         ProductQuantity INT
     );
 

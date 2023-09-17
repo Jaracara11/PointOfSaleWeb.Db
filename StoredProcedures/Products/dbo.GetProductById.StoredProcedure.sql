@@ -7,7 +7,9 @@ GO
 SET
     QUOTED_IDENTIFIER ON
 GO
-    CREATE PROCEDURE [dbo].[GetProductById] @ProductId INT AS BEGIN
+    CREATE PROCEDURE [dbo].[GetProductById] 
+    @ProductId NVARCHAR(50) 
+    AS BEGIN
 SELECT
     ProductID,
     ProductName,

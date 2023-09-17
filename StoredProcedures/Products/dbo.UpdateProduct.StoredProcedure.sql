@@ -7,7 +7,8 @@ GO
 SET
     QUOTED_IDENTIFIER ON
 GO
-    CREATE PROCEDURE [dbo].[UpdateProduct] @ProductID INT,
+    CREATE PROCEDURE [dbo].[UpdateProduct] 
+    @ProductID VARCHAR(50),
     @ProductName VARCHAR(50),
     @ProductDescription VARCHAR(100),
     @ProductStock INT,

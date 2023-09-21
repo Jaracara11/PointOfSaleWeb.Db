@@ -1,6 +1,6 @@
 USE [POS]
 GO
-/****** Object:  StoredProcedure [dbo].[GetOrderById]    Script Date: 7/12/2023 9:08:07 AM ******/
+/****** Object:  StoredProcedure [dbo].[GetOrderById]    Script Date: 9/21/2023 7:33:11 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -16,14 +16,14 @@ BEGIN
         CAST(Orders.Discount * Orders.OrderSubTotal AS DECIMAL(18,2)) AS Discount,
         Orders.OrderTotal,
         Orders.OrderDate,
+		Orders.OrderCancelled,
         (
             SELECT
                 ProductName,
                 ProductDescription,
                 ProductQuantity,
                 ProductPrice,
-                C.CategoryName AS ProductCategoryName,
-				OrderCancelled
+                C.CategoryName AS ProductCategoryName
             FROM
                 Orders
                 CROSS APPLY OPENJSON(Orders.Products) WITH (

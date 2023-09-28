@@ -1,6 +1,6 @@
 USE [master]
 GO
-/****** Object:  Database [POS]    Script Date: 6/28/2023 2:43:48 PM ******/
+/****** Object:  Database [POS]    Script Date: 9/28/2023 11:07:00 AM ******/
 CREATE DATABASE [POS]
  CONTAINMENT = NONE
  ON  PRIMARY 
@@ -82,7 +82,7 @@ ALTER DATABASE [POS] SET QUERY_STORE = OFF
 GO
 USE [POS]
 GO
-/****** Object:  Table [dbo].[Categories]    Script Date: 6/28/2023 2:43:48 PM ******/
+/****** Object:  Table [dbo].[Categories]    Script Date: 9/28/2023 11:07:01 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -96,7 +96,7 @@ CREATE TABLE [dbo].[Categories](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Discounts]    Script Date: 6/28/2023 2:43:48 PM ******/
+/****** Object:  Table [dbo].[Discounts]    Script Date: 9/28/2023 11:07:01 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -106,7 +106,7 @@ CREATE TABLE [dbo].[Discounts](
 	[DiscountAmount] [decimal](10, 2) NOT NULL
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Orders]    Script Date: 6/28/2023 2:43:48 PM ******/
+/****** Object:  Table [dbo].[Orders]    Script Date: 9/28/2023 11:07:01 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -119,19 +119,20 @@ CREATE TABLE [dbo].[Orders](
 	[Discount] [decimal](18, 2) NULL,
 	[OrderTotal] [decimal](18, 2) NOT NULL,
 	[OrderDate] [datetime] NOT NULL,
+	[OrderCancelled] [bit] NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[OrderID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Products]    Script Date: 6/28/2023 2:43:48 PM ******/
+/****** Object:  Table [dbo].[Products]    Script Date: 9/28/2023 11:07:01 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[Products](
-	[ProductID] [int] IDENTITY(1,1) NOT NULL,
+	[ProductID] [nvarchar](50) NOT NULL,
 	[ProductName] [nvarchar](50) NOT NULL,
 	[ProductDescription] [nvarchar](100) NULL,
 	[ProductPrice] [decimal](10, 2) NOT NULL,
@@ -144,7 +145,7 @@ CREATE TABLE [dbo].[Products](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Roles]    Script Date: 6/28/2023 2:43:48 PM ******/
+/****** Object:  Table [dbo].[Roles]    Script Date: 9/28/2023 11:07:01 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -158,7 +159,7 @@ CREATE TABLE [dbo].[Roles](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Users]    Script Date: 6/28/2023 2:43:48 PM ******/
+/****** Object:  Table [dbo].[Users]    Script Date: 9/28/2023 11:07:01 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -195,7 +196,7 @@ REFERENCES [dbo].[Roles] ([RoleID])
 GO
 ALTER TABLE [dbo].[Users] CHECK CONSTRAINT [fk_Users_RoleID]
 GO
-/****** Object:  StoredProcedure [dbo].[AddNewCategory]    Script Date: 6/28/2023 2:43:48 PM ******/
+/****** Object:  StoredProcedure [dbo].[AddNewCategory]    Script Date: 9/28/2023 11:07:01 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -240,18 +241,21 @@ END catch;
 
 END
 GO
-/****** Object:  StoredProcedure [dbo].[AddNewProduct]    Script Date: 6/28/2023 2:43:48 PM ******/
+/****** Object:  StoredProcedure [dbo].[AddNewProduct]    Script Date: 9/28/2023 11:07:01 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-    CREATE PROCEDURE [dbo].[AddNewProduct] @ProductID INT = 0,
+    CREATE PROCEDURE [dbo].[AddNewProduct] 
+    @ProductID NVARCHAR(50),
     @ProductName NVARCHAR(50),
     @ProductDescription NVARCHAR(100) = NULL,
     @ProductPrice DECIMAL(10, 2),
     @ProductCost DECIMAL(10, 2),
     @ProductStock INT,
-    @ProductCategoryID INT AS BEGIN
+    @ProductCategoryID INT 
+    AS 
+    BEGIN
 SET
     NOCOUNT ON;
 
@@ -261,12 +265,25 @@ IF EXISTS (
     FROM
         [dbo].[products]
     WHERE
-        [productname] = @ProductName
+        [ProductID] = @ProductID
+) BEGIN THROW 50000,
+'Product ID already exists!',
+1;
+END     
+
+IF EXISTS (
+    SELECT
+        1
+    FROM
+        [dbo].[products]
+    WHERE
+        [ProductName] = @ProductName
 ) BEGIN THROW 50000,
 'Product name already exists!',
 1;
+END 
 
-END IF NOT EXISTS (
+IF NOT EXISTS (
     SELECT
         1
     FROM
@@ -281,6 +298,7 @@ END BEGIN TRY BEGIN TRANSACTION;
 
 INSERT INTO
     [dbo].[products] (
+        productid,
         productname,
         productdescription,
         productprice,
@@ -290,6 +308,7 @@ INSERT INTO
     )
 VALUES
     (
+        @ProductID,
         @ProductName,
         @ProductDescription,
         @ProductPrice,
@@ -299,9 +318,6 @@ VALUES
     );
 
 COMMIT TRANSACTION;
-
-SELECT
-    @ProductID = SCOPE_IDENTITY();
 
 EXEC GetProductByID @ProductID = @ProductID;
 
@@ -313,7 +329,7 @@ END catch;
 
 END
 GO
-/****** Object:  StoredProcedure [dbo].[AuthUser]    Script Date: 6/28/2023 2:43:48 PM ******/
+/****** Object:  StoredProcedure [dbo].[AuthUser]    Script Date: 9/28/2023 11:07:01 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -346,7 +362,62 @@ SET @PasswordVarbinary = HASHBYTES('SHA2_256', CONVERT(VARBINARY(500), @Password
     WHERE U.Username = @Username AND U.Password = @PasswordVarbinary;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ChangeUserPassword]    Script Date: 6/28/2023 2:43:48 PM ******/
+/****** Object:  StoredProcedure [dbo].[CancelOrderTransaction]    Script Date: 9/28/2023 11:07:01 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE [dbo].[CancelOrderTransaction]
+    @OrderID UNIQUEIDENTIFIER
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        IF NOT EXISTS (SELECT 1 FROM Orders WHERE OrderID = @OrderID)
+        BEGIN
+            THROW 50003, 'Order not found!', 1;
+        END
+
+		IF EXISTS (SELECT 1 FROM Orders WHERE OrderID = @OrderID AND OrderCancelled = 1)
+        BEGIN
+            THROW 50004, 'Order already cancelled!', 1;
+        END
+
+        DECLARE @ProductQuantities TABLE
+        (
+            ProductID [nvarchar](50),
+            ProductQuantity INT
+        );
+
+        INSERT INTO @ProductQuantities (ProductID, ProductQuantity)
+        SELECT JSON_VALUE(p.Value, '$.ProductID') AS ProductID,
+               JSON_VALUE(p.Value, '$.ProductQuantity') AS ProductQuantity
+        FROM Orders
+        CROSS APPLY OPENJSON(Orders.Products) AS p
+        WHERE OrderID = @OrderID;
+
+        UPDATE p
+        SET ProductStock = p.ProductStock + pq.ProductQuantity
+        FROM @ProductQuantities pq
+        INNER JOIN Products p ON pq.ProductID = p.ProductID;
+
+        UPDATE Orders
+        SET OrderTotal = 0,
+            OrderCancelled = 1
+        WHERE OrderID = @OrderID;
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[ChangeUserPassword]    Script Date: 9/28/2023 11:07:01 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -395,7 +466,7 @@ SET @OldPasswordVarbinary = HASHBYTES('SHA2_256', CONVERT(VARBINARY(500), @OldPa
       END catch;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[CreateUser]    Script Date: 6/28/2023 2:43:48 PM ******/
+/****** Object:  StoredProcedure [dbo].[CreateUser]    Script Date: 9/28/2023 11:07:01 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -443,7 +514,7 @@ BEGIN
       END catch;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[DeleteCategory]    Script Date: 6/28/2023 2:43:48 PM ******/
+/****** Object:  StoredProcedure [dbo].[DeleteCategory]    Script Date: 9/28/2023 11:07:01 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -494,12 +565,14 @@ END CATCH;
 
 END
 GO
-/****** Object:  StoredProcedure [dbo].[DeleteProduct]    Script Date: 6/28/2023 2:43:48 PM ******/
+/****** Object:  StoredProcedure [dbo].[DeleteProduct]    Script Date: 9/28/2023 11:07:01 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-    CREATE PROCEDURE [dbo].[DeleteProduct] @ProductID int AS BEGIN
+    CREATE PROCEDURE [dbo].[DeleteProduct] 
+    @ProductID NVARCHAR(50)
+    AS BEGIN
 SET
     NOCOUNT ON;
 
@@ -531,7 +604,7 @@ END CATCH;
 
 END
 GO
-/****** Object:  StoredProcedure [dbo].[DeleteUser]    Script Date: 6/28/2023 2:43:48 PM ******/
+/****** Object:  StoredProcedure [dbo].[DeleteUser]    Script Date: 9/28/2023 11:07:01 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -560,7 +633,7 @@ BEGIN
     END CATCH;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[GetAllCategories]    Script Date: 6/28/2023 2:43:48 PM ******/
+/****** Object:  StoredProcedure [dbo].[GetAllCategories]    Script Date: 9/28/2023 11:07:01 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -576,7 +649,7 @@ ORDER BY
 
 END
 GO
-/****** Object:  StoredProcedure [dbo].[GetAllDiscounts]    Script Date: 6/28/2023 2:43:48 PM ******/
+/****** Object:  StoredProcedure [dbo].[GetAllDiscounts]    Script Date: 9/28/2023 11:07:01 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -590,7 +663,7 @@ FROM
    ORDER BY DiscountAmount ASC
 END
 GO
-/****** Object:  StoredProcedure [dbo].[GetAllProducts]    Script Date: 6/28/2023 2:43:48 PM ******/
+/****** Object:  StoredProcedure [dbo].[GetAllProducts]    Script Date: 9/28/2023 11:07:01 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -612,7 +685,7 @@ ORDER BY
    ProductName ASC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[GetAllUserRoles]    Script Date: 6/28/2023 2:43:48 PM ******/
+/****** Object:  StoredProcedure [dbo].[GetAllUserRoles]    Script Date: 9/28/2023 11:07:01 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -624,7 +697,7 @@ BEGIN
    FROM Roles WITH (NOLOCK);
 END
 GO
-/****** Object:  StoredProcedure [dbo].[GetAllUsers]    Script Date: 6/28/2023 2:43:48 PM ******/
+/****** Object:  StoredProcedure [dbo].[GetAllUsers]    Script Date: 9/28/2023 11:07:01 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -642,7 +715,52 @@ FROM
     Users WITH (NOLOCK)
 END
 GO
-/****** Object:  StoredProcedure [dbo].[GetCategoryById]    Script Date: 6/28/2023 2:43:48 PM ******/
+/****** Object:  StoredProcedure [dbo].[GetBestSellerProducts]    Script Date: 9/28/2023 11:07:01 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[GetBestSellerProducts]
+AS
+BEGIN
+    DECLARE @ProductIDs TABLE (ProductID NVARCHAR(50));
+    DECLARE @TotalQuantitySolds TABLE (ProductID NVARCHAR(50), TotalQuantitySold INT);
+    DECLARE @ProductNames TABLE (ProductID NVARCHAR(50), ProductName NVARCHAR(50));
+    DECLARE @ProductDescriptions TABLE (ProductID NVARCHAR(50), ProductDescription NVARCHAR(100));
+
+    INSERT INTO @ProductIDs (ProductID)
+    SELECT TOP 5 WITH TIES
+        JSON_VALUE(p.value, '$.ProductID') AS ProductID
+    FROM Orders o
+    CROSS APPLY OPENJSON(o.Products) p
+    GROUP BY JSON_VALUE(p.value, '$.ProductID')
+    ORDER BY SUM(CAST(JSON_VALUE(p.value, '$.ProductQuantity') AS INT)) DESC;
+
+    INSERT INTO @TotalQuantitySolds (ProductID, TotalQuantitySold)
+    SELECT p.ProductID, SUM(CAST(JSON_VALUE(obj.value, '$.ProductQuantity') AS INT)) AS TotalQuantitySold
+    FROM Orders o
+    CROSS APPLY OPENJSON(o.Products) obj
+    INNER JOIN @ProductIDs p ON JSON_VALUE(obj.value, '$.ProductID') = p.ProductID
+    GROUP BY p.ProductID;
+
+    INSERT INTO @ProductNames (ProductID, ProductName)
+    SELECT p.ProductID, p.ProductName
+    FROM @ProductIDs i
+    INNER JOIN Products p ON i.ProductID = p.ProductID;
+
+    INSERT INTO @ProductDescriptions (ProductID, ProductDescription)
+    SELECT p.ProductID, p.ProductDescription
+    FROM @ProductIDs i
+    INNER JOIN Products p ON i.ProductID = p.ProductID;
+
+    SELECT pn.ProductName, pd.ProductDescription, tq.TotalQuantitySold
+    FROM @ProductNames pn
+    INNER JOIN @ProductDescriptions pd ON pn.ProductID = pd.ProductID
+    INNER JOIN @TotalQuantitySolds tq ON pn.ProductID = tq.ProductID;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[GetCategoryById]    Script Date: 9/28/2023 11:07:01 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -657,7 +775,7 @@ WHERE
     CategoryID = @CategoryId
 END
 GO
-/****** Object:  StoredProcedure [dbo].[GetDiscountsByUsername]    Script Date: 6/28/2023 2:43:48 PM ******/
+/****** Object:  StoredProcedure [dbo].[GetDiscountsByUsername]    Script Date: 9/28/2023 11:07:01 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -679,12 +797,80 @@ FROM
    ORDER BY DiscountAmount ASC
 END
 GO
-/****** Object:  StoredProcedure [dbo].[GetProductById]    Script Date: 6/28/2023 2:43:48 PM ******/
+/****** Object:  StoredProcedure [dbo].[GetOrderById]    Script Date: 9/28/2023 11:07:01 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-    CREATE PROCEDURE [dbo].[GetProductById] @ProductId INT AS BEGIN
+CREATE PROCEDURE [dbo].[GetOrderById] 
+    @OrderId UNIQUEIDENTIFIER
+AS 
+BEGIN
+    SELECT
+        Orders.OrderID,
+        CONCAT(U.FirstName, ' ', U.LastName) AS [User],
+        Orders.OrderSubTotal,
+        CAST(Orders.Discount * Orders.OrderSubTotal AS DECIMAL(18,2)) AS Discount,
+        Orders.OrderTotal,
+        Orders.OrderDate,
+		Orders.OrderCancelled,
+        (
+            SELECT
+                ProductName,
+                ProductDescription,
+                ProductQuantity,
+                ProductPrice,
+                C.CategoryName AS ProductCategoryName
+            FROM
+                Orders
+                CROSS APPLY OPENJSON(Orders.Products) WITH (
+                    ProductID [nvarchar](50),
+                    ProductQuantity int
+                ) AS ProductInfo
+                JOIN Products AS P ON ProductInfo.ProductID = P.ProductID
+                JOIN Categories AS C ON P.ProductCategoryID = C.CategoryID
+            WHERE
+                Orders.OrderID = @OrderId
+            FOR JSON PATH
+        ) AS Products
+    FROM
+        Orders
+		INNER JOIN Users AS U ON Orders.[User] = U.Username
+    WHERE
+        OrderID = @OrderId;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[GetOrdersByDate]    Script Date: 9/28/2023 11:07:01 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[GetOrdersByDate]
+@InitialDate DateTime,
+@FinalDate Datetime
+AS BEGIN
+    SET @InitialDate = DATEADD(DAY, DATEDIFF(DAY, 0, @InitialDate), 0)
+    SET @FinalDate = DATEADD(MINUTE, -1, DATEADD(DAY, DATEDIFF(DAY, 0, @FinalDate) + 1, 0))
+
+    SELECT 
+        OrderID,
+        [User],
+        OrderTotal,
+        OrderDate
+    FROM Orders WITH (NOLOCK)
+    WHERE OrderDate BETWEEN @InitialDate AND @FinalDate
+    ORDER BY OrderDate DESC;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[GetProductById]    Script Date: 9/28/2023 11:07:01 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+    CREATE PROCEDURE [dbo].[GetProductById] 
+    @ProductId NVARCHAR(50) 
+    AS BEGIN
 SELECT
     ProductID,
     ProductName,
@@ -699,7 +885,7 @@ WHERE
     ProductID = @ProductId
 END
 GO
-/****** Object:  StoredProcedure [dbo].[GetProductsByCategoryId]    Script Date: 6/28/2023 2:43:48 PM ******/
+/****** Object:  StoredProcedure [dbo].[GetProductsByCategoryId]    Script Date: 9/28/2023 11:07:01 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -722,7 +908,61 @@ ORDER BY
 
 END
 GO
-/****** Object:  StoredProcedure [dbo].[GetUserByUsername]    Script Date: 6/28/2023 2:43:48 PM ******/
+/****** Object:  StoredProcedure [dbo].[GetRecentOrders]    Script Date: 9/28/2023 11:07:01 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+   CREATE PROCEDURE [dbo].[GetRecentOrders] AS BEGIN
+SELECT TOP 5 
+       [User],
+	   OrderID,
+	   OrderTotal, 
+	   OrderDate 
+FROM Orders WITH (NOLOCK) 
+ORDER BY OrderDate DESC;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[GetSalesByDate]    Script Date: 9/28/2023 11:07:01 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[GetSalesByDate]
+@InitialDate DateTime,
+@FinalDate Datetime
+AS BEGIN
+    SET @InitialDate = DATEADD(DAY, DATEDIFF(DAY, 0, @InitialDate), 0)
+    SET @FinalDate = DATEADD(MINUTE, -1, DATEADD(DAY, DATEDIFF(DAY, 0, @FinalDate) + 1, 0))
+
+	DECLARE @TotalSales decimal(18, 2);
+
+	SELECT @TotalSales = SUM(OrderTotal)
+	FROM Orders WITH (NOLOCK)
+	WHERE OrderDate BETWEEN @InitialDate AND @FinalDate;
+
+	SELECT ISNULL(@TotalSales, 0);
+END
+GO
+/****** Object:  StoredProcedure [dbo].[GetTotalSalesOfTheDay]    Script Date: 9/28/2023 11:07:01 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[GetTotalSalesOfTheDay] AS 
+BEGIN
+    DECLARE @TotalSalesOfTheDay DECIMAL(18, 2) = NULL;
+
+    SELECT @TotalSalesOfTheDay = SUM(OrderTotal)
+    FROM orders WITH (NOLOCK)
+    WHERE CONVERT(DATE, OrderDate) = CONVERT(DATE, GETDATE());
+
+    SELECT ISNULL(@TotalSalesOfTheDay, 0) AS TotalSalesOfTheDay;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[GetUserByUsername]    Script Date: 9/28/2023 11:07:01 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -742,7 +982,7 @@ WHERE
     Username = @Username
 END
 GO
-/****** Object:  StoredProcedure [dbo].[NewOrderTransaction]    Script Date: 6/28/2023 2:43:48 PM ******/
+/****** Object:  StoredProcedure [dbo].[NewOrderTransaction]    Script Date: 9/28/2023 11:07:01 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -764,7 +1004,7 @@ BEGIN
 
 	DECLARE @UserRoleID INT;
 
-	SELECT @UserRoleID = (SELECT UserRoleID FROM Users WHERE Username = @User);
+	SELECT @UserRoleID = (SELECT UserRoleID FROM Users WITH (NOLOCK) WHERE Username = @User);
 
 	IF (@UserRoleID = 0 OR @UserRoleID IS NULL)
 	BEGIN
@@ -786,7 +1026,7 @@ BEGIN
 
     CREATE TABLE #ProductQuantities
     (
-        ProductID INT,
+        ProductID [nvarchar](50),
         ProductQuantity INT
     );
 
@@ -809,7 +1049,7 @@ BEGIN
     BEGIN TRY
         BEGIN TRANSACTION;
 
-        DECLARE @OrderID NVARCHAR(50) = NEWID();
+        DECLARE @OrderID UNIQUEIDENTIFIER = NEWID();
         DECLARE @OrderSubTotal DECIMAL(18, 2) = 0;
         DECLARE @OrderTotal DECIMAL(18, 2) = 0;
         DECLARE @OrderDate DATETIME = GETDATE();
@@ -837,14 +1077,7 @@ BEGIN
 
         COMMIT TRANSACTION;
 
-        SELECT
-            @OrderID AS OrderID,
-            @User AS [User],
-            @Products AS Products,
-            @OrderSubTotal AS OrderSubTotal,
-            @Discount AS Discount,
-            @OrderTotal AS OrderTotal,
-            @OrderDate AS OrderDate;
+        EXEC [dbo].[GetOrderById] @OrderId = @OrderID;
 
     END TRY
     BEGIN CATCH
@@ -855,7 +1088,7 @@ BEGIN
     DROP TABLE #ProductQuantities;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ResetUserPassword]    Script Date: 6/28/2023 2:43:48 PM ******/
+/****** Object:  StoredProcedure [dbo].[ResetUserPassword]    Script Date: 9/28/2023 11:07:01 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -895,7 +1128,7 @@ SET @NewPasswordVarbinary = HASHBYTES('SHA2_256', CONVERT(VARBINARY(500), @NewPa
       END catch;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[UpdateCategory]    Script Date: 6/28/2023 2:43:48 PM ******/
+/****** Object:  StoredProcedure [dbo].[UpdateCategory]    Script Date: 9/28/2023 11:07:01 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -946,12 +1179,13 @@ END CATCH;
 
 END
 GO
-/****** Object:  StoredProcedure [dbo].[UpdateProduct]    Script Date: 6/28/2023 2:43:48 PM ******/
+/****** Object:  StoredProcedure [dbo].[UpdateProduct]    Script Date: 9/28/2023 11:07:01 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-    CREATE PROCEDURE [dbo].[UpdateProduct] @ProductID INT,
+    CREATE PROCEDURE [dbo].[UpdateProduct] 
+    @ProductID VARCHAR(50),
     @ProductName VARCHAR(50),
     @ProductDescription VARCHAR(100),
     @ProductStock INT,
@@ -1025,7 +1259,7 @@ END CATCH;
 
 END
 GO
-/****** Object:  StoredProcedure [dbo].[UpdateUser]    Script Date: 6/28/2023 2:43:48 PM ******/
+/****** Object:  StoredProcedure [dbo].[UpdateUser]    Script Date: 9/28/2023 11:07:01 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON

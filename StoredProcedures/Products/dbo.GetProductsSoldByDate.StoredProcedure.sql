@@ -1,6 +1,6 @@
 USE [POS]
 GO
-/****** Object:  StoredProcedure [dbo].[GetProductsSoldByDate]    Script Date: 9/30/2023 10:26:37 AM ******/
+/****** Object:  StoredProcedure [dbo].[GetProductsSoldByDate]    Script Date: 9/30/2023 12:19:39 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -42,17 +42,12 @@ BEGIN
     JOIN Products p ON JSON_VALUE(product.value, '$.ProductID') = p.ProductID;
 
     SELECT
-        OrderID,
-        ProductID,
-        OrderDate,
-        ProductName,
-        ProductDescription,
-        ProductQuantity,
-        ProductUnitPrice,
-        ProductSubtotalPrice,
-        Discount,
-        Total
-    FROM @OrderData
-    WHERE OrderDate BETWEEN @InitialDate AND @FinalDate
-    ORDER BY OrderDate DESC;
+    ProductID,
+    ProductName,
+	ProductDescription,
+    SUM(Total) AS TotalSold
+FROM @OrderData
+WHERE OrderDate BETWEEN @InitialDate AND @FinalDate
+GROUP BY ProductID, ProductName, ProductDescription
+ORDER BY ProductName;
 END;

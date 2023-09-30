@@ -1,34 +1,58 @@
-DECLARE @InitialDate Datetime = '2023-09-28';
-DECLARE @FinalDate Datetime = '2023-09-28';
+USE [POS]
+GO
+/****** Object:  StoredProcedure [dbo].[GetProductsSoldByDate]    Script Date: 9/30/2023 10:26:37 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE [dbo].[GetProductsSoldByDate]
+    @InitialDate DATETIME,
+    @FinalDate DATETIME
+AS
+BEGIN
+    SET NOCOUNT ON;
 
-DECLARE @ProductData TABLE (
-    ProductID varchar(50),
-    ProductQuantity INT,
-    OrderDate DATE,
-    ProductName VARCHAR(50),
-    ProductPrice DECIMAL(10, 2),
-    Discount DECIMAL(10, 2)
-);
+    DECLARE @OrderData TABLE (
+        OrderID UNIQUEIDENTIFIER,
+        ProductID NVARCHAR(50),
+        ProductQuantity INT,
+        OrderDate DATE,
+        ProductName NVARCHAR(50),
+        ProductDescription NVARCHAR(100),
+        ProductUnitPrice DECIMAL(10, 2),
+        ProductSubtotalPrice DECIMAL(10, 2),
+        Discount DECIMAL(10, 2),
+        Total DECIMAL(10, 2)
+    );
 
-INSERT INTO @ProductData (ProductID, ProductQuantity, OrderDate, ProductName, ProductPrice, Discount)
-SELECT
-    JSON_VALUE(product.value, '$.ProductID') AS ProductID,
-    JSON_VALUE(product.value, '$.ProductQuantity') AS ProductQuantity,
-    OrderDate,
-    p.ProductName,
-    p.ProductPrice,
-    Discount
-FROM orders
-CROSS APPLY OPENJSON(products) AS product
-JOIN Products p ON JSON_VALUE(product.value, '$.ProductID') = p.ProductID;
+    INSERT INTO @OrderData (OrderID, ProductID, ProductQuantity, OrderDate, ProductName, ProductDescription, ProductUnitPrice, ProductSubtotalPrice, Discount, Total)
+    SELECT
+        OrderID,
+        JSON_VALUE(product.value, '$.ProductID') AS ProductID,
+        JSON_VALUE(product.value, '$.ProductQuantity') AS ProductQuantity,
+        OrderDate,
+        p.ProductName,
+        p.ProductDescription,
+        p.ProductPrice AS ProductUnitPrice,
+        ProductSubtotalPrice = (SELECT p.ProductPrice * JSON_VALUE(product.value, '$.ProductQuantity')),
+        Discount = (SELECT Discount * p.ProductPrice * JSON_VALUE(product.value, '$.ProductQuantity')),
+        Total = (SELECT (p.ProductPrice * JSON_VALUE(product.value, '$.ProductQuantity')) - ISNULL((Discount * p.ProductPrice * JSON_VALUE(product.value, '$.ProductQuantity')), 0))
+    FROM orders
+    CROSS APPLY OPENJSON(products) AS product
+    JOIN Products p ON JSON_VALUE(product.value, '$.ProductID') = p.ProductID;
 
-SELECT 
-    ProductID,
-    ProductName,
-	SUM(ProductQuantity) AS TotalQuantity,
-    ProductPrice AS UnitPrice,   
-    SUM(ProductPrice * ProductQuantity) AS TotalPrice,
-    MAX(Discount) AS Discount
-FROM @ProductData
-WHERE OrderDate BETWEEN @InitialDate AND @FinalDate
-GROUP BY ProductID, ProductName, ProductPrice;
+    SELECT
+        OrderID,
+        ProductID,
+        OrderDate,
+        ProductName,
+        ProductDescription,
+        ProductQuantity,
+        ProductUnitPrice,
+        ProductSubtotalPrice,
+        Discount,
+        Total
+    FROM @OrderData
+    WHERE OrderDate BETWEEN @InitialDate AND @FinalDate
+    ORDER BY OrderDate DESC;
+END;

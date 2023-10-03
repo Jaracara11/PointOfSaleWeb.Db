@@ -1,6 +1,6 @@
 USE [POS]
 GO
-/****** Object:  StoredProcedure [dbo].[GetOrderById]    Script Date: 9/21/2023 7:33:11 PM ******/
+/****** Object:  StoredProcedure [dbo].[GetOrderById]    Script Date: 10/3/2023 6:32:24 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -9,6 +9,7 @@ CREATE PROCEDURE [dbo].[GetOrderById]
     @OrderId UNIQUEIDENTIFIER
 AS 
 BEGIN
+SET NOCOUNT ON;
     SELECT
         Orders.OrderID,
         CONCAT(U.FirstName, ' ', U.LastName) AS [User],

@@ -1,6 +1,6 @@
 USE [POS]
 GO
-/****** Object: StoredProcedure [dbo].[GetBestSellerProduct] ******/
+/****** Object:  StoredProcedure [dbo].[GetBestSellerProducts]    Script Date: 10/8/2023 11:51:00 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -9,38 +9,16 @@ GO
 CREATE PROCEDURE [dbo].[GetBestSellerProducts]
 AS
 BEGIN
-    DECLARE @ProductIDs TABLE (ProductID NVARCHAR(50));
-    DECLARE @TotalQuantitySolds TABLE (ProductID NVARCHAR(50), TotalQuantitySold INT);
-    DECLARE @ProductNames TABLE (ProductID NVARCHAR(50), ProductName NVARCHAR(50));
-    DECLARE @ProductDescriptions TABLE (ProductID NVARCHAR(50), ProductDescription NVARCHAR(100));
-
-    INSERT INTO @ProductIDs (ProductID)
-    SELECT TOP 5 WITH TIES
-        JSON_VALUE(p.value, '$.ProductID') AS ProductID
-    FROM Orders o
-    CROSS APPLY OPENJSON(o.Products) p
-    GROUP BY JSON_VALUE(p.value, '$.ProductID')
-    ORDER BY SUM(CAST(JSON_VALUE(p.value, '$.ProductQuantity') AS INT)) DESC;
-
-    INSERT INTO @TotalQuantitySolds (ProductID, TotalQuantitySold)
-    SELECT p.ProductID, SUM(CAST(JSON_VALUE(obj.value, '$.ProductQuantity') AS INT)) AS TotalQuantitySold
-    FROM Orders o
-    CROSS APPLY OPENJSON(o.Products) obj
-    INNER JOIN @ProductIDs p ON JSON_VALUE(obj.value, '$.ProductID') = p.ProductID
-    GROUP BY p.ProductID;
-
-    INSERT INTO @ProductNames (ProductID, ProductName)
-    SELECT p.ProductID, p.ProductName
-    FROM @ProductIDs i
-    INNER JOIN Products p ON i.ProductID = p.ProductID;
-
-    INSERT INTO @ProductDescriptions (ProductID, ProductDescription)
-    SELECT p.ProductID, p.ProductDescription
-    FROM @ProductIDs i
-    INNER JOIN Products p ON i.ProductID = p.ProductID;
-
-    SELECT pn.ProductName, pd.ProductDescription, tq.TotalQuantitySold
-    FROM @ProductNames pn
-    INNER JOIN @ProductDescriptions pd ON pn.ProductID = pd.ProductID
-    INNER JOIN @TotalQuantitySolds tq ON pn.ProductID = tq.ProductID;
+    SELECT TOP 5
+    p.ProductName,
+    p.ProductDescription,
+    SUM(CAST(j.ProductQuantity AS INT)) AS TotalQuantitySold
+FROM Orders o
+CROSS APPLY OPENJSON(o.Products) WITH (
+    ProductID NVARCHAR(50) '$.ProductID',
+    ProductQuantity INT '$.ProductQuantity'
+) AS j
+INNER JOIN Products p ON j.ProductID = p.ProductID
+GROUP BY p.ProductName, p.ProductDescription
+ORDER BY TotalQuantitySold DESC;
 END

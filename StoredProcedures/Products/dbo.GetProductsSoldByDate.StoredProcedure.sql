@@ -1,17 +1,20 @@
 USE [POS]
 GO
-/****** Object:  StoredProcedure [dbo].[GetProductsSoldByDate]    Script Date: 1/25/2024 11:19:29 AM ******/
+/****** Object:  StoredProcedure [dbo].[GetProductsSoldByDate]    Script Date: 1/25/2024 11:33:07 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 
 CREATE PROCEDURE [dbo].[GetProductsSoldByDate]
-    @InitialDate DATE,
-    @FinalDate DATE
+    @InitialDate DateTime,
+    @FinalDate DateTime
 AS
 BEGIN
     SET NOCOUNT ON;
+
+	SET @InitialDate = DATEADD(DAY, DATEDIFF(DAY, 0, @InitialDate), 0)
+    SET @FinalDate = DATEADD(MINUTE, -1, DATEADD(DAY, DATEDIFF(DAY, 0, @FinalDate) + 1, 0))
 
     DECLARE @OrderData TABLE (
         OrderID UNIQUEIDENTIFIER,

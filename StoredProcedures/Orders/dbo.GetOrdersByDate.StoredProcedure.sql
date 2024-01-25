@@ -1,6 +1,6 @@
 USE [POS]
 GO
-/****** Object:  StoredProcedure [dbo].[GetOrdersByDate]    Script Date: 7/8/2023 8:54:50 AM ******/
+/****** Object:  StoredProcedure [dbo].[GetOrdersByDate]    Script Date: 1/25/2024 11:29:54 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON

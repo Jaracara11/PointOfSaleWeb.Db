@@ -1,14 +1,14 @@
 USE [POS]
 GO
-/****** Object:  StoredProcedure [dbo].[GetProductsSoldByDate]    Script Date: 1/25/2024 11:04:28 AM ******/
+/****** Object:  StoredProcedure [dbo].[GetProductsSoldByDate]    Script Date: 1/25/2024 11:19:29 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 
 CREATE PROCEDURE [dbo].[GetProductsSoldByDate]
-    @InitialDate DATETIME,
-    @FinalDate DATETIME
+    @InitialDate DATE,
+    @FinalDate DATE
 AS
 BEGIN
     SET NOCOUNT ON;

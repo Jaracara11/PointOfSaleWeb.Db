@@ -1,6 +1,6 @@
 USE [POS]
 GO
-/****** Object:  StoredProcedure [dbo].[GetProductsSoldByDate]    Script Date: 1/25/2024 11:33:07 AM ******/
+/****** Object:  StoredProcedure [dbo].[GetProductsSoldByDate]    Script Date: 2/8/2024 6:49:45 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -43,7 +43,8 @@ BEGIN
         Total = (SELECT (p.ProductPrice * JSON_VALUE(product.value, '$.ProductQuantity')) - ISNULL((Discount * p.ProductPrice * JSON_VALUE(product.value, '$.ProductQuantity')), 0))
     FROM orders
     CROSS APPLY OPENJSON(products) AS product
-    JOIN Products p ON JSON_VALUE(product.value, '$.ProductID') = p.ProductID;
+    JOIN Products p ON JSON_VALUE(product.value, '$.ProductID') = p.ProductID
+	WHERE OrderCancelled = NULL;
 
     SELECT
         ProductID,

@@ -13,7 +13,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-	SET @InitialDate = DATEADD(DAY, DATEDIFF(DAY, 0, @InitialDate), 0)
+    SET @InitialDate = DATEADD(DAY, DATEDIFF(DAY, 0, @InitialDate), 0)
     SET @FinalDate = DATEADD(MINUTE, -1, DATEADD(DAY, DATEDIFF(DAY, 0, @FinalDate) + 1, 0))
 
     DECLARE @OrderData TABLE (
@@ -44,7 +44,7 @@ BEGIN
     FROM orders
     CROSS APPLY OPENJSON(products) AS product
     JOIN Products p ON JSON_VALUE(product.value, '$.ProductID') = p.ProductID
-	WHERE OrderCancelled = NULL;
+    WHERE OrderCancelled IS NULL AND OrderDate BETWEEN @InitialDate AND @FinalDate;
 
     SELECT
         ProductID,

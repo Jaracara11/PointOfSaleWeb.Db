@@ -74,7 +74,7 @@ BEGIN
 
         IF @Discount IS NOT NULL
         BEGIN
-            SET @OrderTotal = @OrderSubTotal - (@OrderSubTotal * @Discount / 100);
+            SET @OrderTotal = @OrderSubTotal - (@OrderSubTotal * @Discount);
         END
         ELSE
         BEGIN

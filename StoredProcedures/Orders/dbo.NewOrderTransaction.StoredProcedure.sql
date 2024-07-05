@@ -5,33 +5,30 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-CREATE PROCEDURE [dbo].[NewOrderTransaction]
+ALTER PROCEDURE [dbo].[NewOrderTransaction]
     @User NVARCHAR(25),
     @Products NVARCHAR(MAX),
     @Discount DECIMAL(18, 2) = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
-
-    IF NOT EXISTS (SELECT 1
-                   FROM   Users
-                   WHERE  Username = @User)
+    IF NOT EXISTS (SELECT 1 FROM Users WHERE Username = @User)
     BEGIN
         THROW 51000, 'User does not exist!', 1;
     END 
 
-	DECLARE @UserRoleID INT;
+    DECLARE @UserRoleID INT;
+    SELECT @UserRoleID = UserRoleID FROM Users WITH (NOLOCK) WHERE Username = @User;
 
-	SELECT @UserRoleID = (SELECT UserRoleID FROM Users WITH (NOLOCK) WHERE Username = @User);
-
-	IF (@UserRoleID = 0 OR @UserRoleID IS NULL)
-	BEGIN
+    IF (@UserRoleID = 0 OR @UserRoleID IS NULL)
+    BEGIN
         THROW 51000, 'User does not have permission to perform sales operations.', 1;
     END 
 
+    DECLARE @DiscountValid DECIMAL(18, 2) = NULL;
+
     IF @Discount IS NOT NULL
     BEGIN
-	   DECLARE @DiscountValid DECIMAL(18, 2);
        SELECT @DiscountValid = DiscountAmount
        FROM Discounts WITH (NOLOCK)
        WHERE UserRoleID = @UserRoleID AND DiscountAmount = @Discount;
@@ -44,7 +41,7 @@ BEGIN
 
     CREATE TABLE #ProductQuantities
     (
-        ProductID [nvarchar](50),
+        ProductID NVARCHAR(50), 
         ProductQuantity INT
     );
 
@@ -78,7 +75,7 @@ BEGIN
 
         IF @Discount IS NOT NULL
         BEGIN
-            SET @OrderTotal = @OrderSubTotal - (@OrderSubTotal * @Discount);
+            SET @OrderTotal = @OrderSubTotal - (@OrderSubTotal * @Discount / 100);
         END
         ELSE
         BEGIN
@@ -102,6 +99,5 @@ BEGIN
         ROLLBACK TRANSACTION;
         THROW;
     END CATCH;
-
     DROP TABLE #ProductQuantities;
 END

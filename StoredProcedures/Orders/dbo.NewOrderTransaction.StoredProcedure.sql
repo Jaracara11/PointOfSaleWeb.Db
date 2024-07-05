@@ -5,7 +5,7 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-CREATE PROCEDURE [dbo].[NewOrderTransaction]
+ALTER PROCEDURE [dbo].[NewOrderTransaction]
     @User NVARCHAR(25),
     @Products NVARCHAR(MAX),
     @Discount DECIMAL(18, 2) = NULL
@@ -41,7 +41,7 @@ BEGIN
 
     CREATE TABLE #ProductQuantities
     (
-        ProductID NVARCHAR(50), 
+        ProductID NVARCHAR(50),
         ProductQuantity INT
     );
 
@@ -57,7 +57,6 @@ BEGIN
         WHERE pq.ProductQuantity > p.ProductStock
     )
     BEGIN
-        DROP TABLE #ProductQuantities;
         THROW 50001, 'Product quantity exceeds its stock, please update your cart.', 1;
     END
 
@@ -99,5 +98,4 @@ BEGIN
         ROLLBACK TRANSACTION;
         THROW;
     END CATCH;
-    DROP TABLE #ProductQuantities;
 END

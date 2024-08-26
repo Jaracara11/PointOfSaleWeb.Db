@@ -16,7 +16,7 @@ BEGIN
        p.ProductStock,
        p.ProductCost,
        p.ProductPrice,
-       c.CategoryName
+       c.CategoryName AS ProductCategoryName	
    FROM
        Products p WITH (NOLOCK)
    INNER JOIN

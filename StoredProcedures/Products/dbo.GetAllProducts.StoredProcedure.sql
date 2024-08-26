@@ -1,6 +1,6 @@
 USE [POS]
 GO
-/****** Object:  StoredProcedure [dbo].[GetAllProducts]    Script Date: 8/26/2024 8:24:22 AM ******/
+/****** Object:  StoredProcedure [dbo].[GetAllProducts]    Script Date: 8/26/2024 8:46:37 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -16,7 +16,6 @@ BEGIN
        p.ProductStock,
        p.ProductCost,
        p.ProductPrice,
-       c.CategoryID,
        c.CategoryName
    FROM
        Products p WITH (NOLOCK)

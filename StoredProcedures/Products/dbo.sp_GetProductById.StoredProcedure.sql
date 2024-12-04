@@ -1,11 +1,10 @@
-USE [POS]
+USE db10814;
 GO
-/****** Object:  StoredProcedure [dbo].[GetProductById]    Script Date: 8/31/2024 11:41:22 AM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-    CREATE PROCEDURE [dbo].[GetProductById] 
+    CREATE PROCEDURE [dbo].[sp_GetProductById] 
     @ProductId NVARCHAR(50) 
     AS BEGIN
 SELECT

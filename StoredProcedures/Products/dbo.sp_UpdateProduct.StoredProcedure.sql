@@ -4,27 +4,32 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-CREATE PROCEDURE [dbo].[sp_AddNewProduct] 
+CREATE PROCEDURE [dbo].[sp_UpdateProduct] 
     @ProductID NVARCHAR(50),
     @ProductName NVARCHAR(100),
-    @ProductDescription NVARCHAR(255) = NULL,
-    @ProductPrice DECIMAL(18, 2),
-    @ProductCost DECIMAL(18, 2),
+    @ProductDescription NVARCHAR(255),
     @ProductStock INT,
-    @ProductCategoryID INT 
-AS 
+    @ProductCost DECIMAL(18, 2),
+    @ProductPrice DECIMAL(18, 2),
+    @ProductCategoryID INT
+AS
 BEGIN
     SET NOCOUNT ON;
 
     DECLARE @ErrorMessage NVARCHAR(255);
 
-    IF EXISTS (SELECT 1 FROM [dbo].[Products] WHERE [ProductID] = @ProductID)
+    IF NOT EXISTS (SELECT 1 FROM [dbo].[Products] WHERE [ProductID] = @ProductID)
     BEGIN
-        SET @ErrorMessage = 'Product ID already exists!';
+        SET @ErrorMessage = 'Product does not exist!';
         GOTO ErrorHandler;
     END;
 
-    IF EXISTS (SELECT 1 FROM [dbo].[Products] WHERE [ProductName] = @ProductName)
+    IF EXISTS (
+        SELECT 1 
+        FROM [dbo].[Products] 
+        WHERE [ProductName] = @ProductName 
+          AND [ProductID] <> @ProductID
+    )
     BEGIN
         SET @ErrorMessage = 'Product name already exists!';
         GOTO ErrorHandler;
@@ -39,24 +44,16 @@ BEGIN
     BEGIN TRY
         BEGIN TRANSACTION;
 
-        INSERT INTO [dbo].[Products] (
-            ProductID,
-            ProductName,
-            ProductDescription,
-            ProductPrice,
-            ProductCost,
-            ProductStock,
-            ProductCategoryID
-        )
-        VALUES (
-            @ProductID,
-            @ProductName,
-            @ProductDescription,
-            @ProductPrice,
-            @ProductCost,
-            @ProductStock,
-            @ProductCategoryID
-        );
+        UPDATE [dbo].[Products]
+        SET 
+            ProductName = @ProductName,
+            ProductDescription = @ProductDescription,
+            ProductPrice = @ProductPrice,
+            ProductCost = @ProductCost,
+            ProductStock = @ProductStock,
+            ProductCategoryID = @ProductCategoryID
+        WHERE 
+            ProductID = @ProductID;
 
         COMMIT TRANSACTION;
 

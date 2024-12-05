@@ -1,0 +1,21 @@
+USE [db10814]
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TRIGGER [dbo].[tg_ResetUserIDSeed]
+ON [dbo].[Users]
+AFTER DELETE
+AS
+BEGIN
+    DECLARE @MaxUserID INT;
+    
+    SELECT @MaxUserID = ISNULL(MAX(UserID), 0)
+    FROM Users;
+    
+    DBCC CHECKIDENT('Users', RESEED, @MaxUserID);
+END;
+GO
+ALTER TABLE [dbo].[Users] ENABLE TRIGGER [tg_ResetUserIDSeed]
+GO
